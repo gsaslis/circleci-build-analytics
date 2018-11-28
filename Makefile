@@ -3,6 +3,9 @@ default: download index
 
 .PHONY: index json-to-ndjson jq index download
 
+export GITHUB_USERNAME := 3scale
+export GITHUB_REPONAME := porta
+
 export ES_HOST := localhost
 export ES_PORT := 9200
 export ES_INDEX := circleci_builds
@@ -40,12 +43,12 @@ download: builds/*.json
 
 builds/*.json: # Fetches all builds information from circleci, in batches.
 builds/*.json: builds
-	curl -L "https://circleci.com/api/v1.1/project/github/3scale/porta/?limit=1&filter=completed&offset=0" | jq '.[].build_num' > last_build.json
+	curl -L "https://circleci.com/api/v1.1/project/github/$$GITHUB_USERNAME/$$GITHUB_REPONAME/?limit=1&filter=completed&offset=0" | jq '.[].build_num' > last_build.json
 	export LAST_BUILD=$$(cat last_build.json) ; \
 	echo $$LAST_BUILD ; \
 	number=0 ; while [[ $$number -le $$LAST_BUILD ]] ; do \
 		echo "Fetching 100 builds from offset $$number" ; \
-		curl -L "https://circleci.com/api/v1.1/project/github/3scale/porta/?limit=100&filter=completed&offset=$$number" | jq -f credits.jq > builds/$$number.json ; \
+		curl -L "https://circleci.com/api/v1.1/project/github/$$GITHUB_USERNAME/$$GITHUB_REPONAME/?limit=100&filter=completed&offset=$$number" | jq -f credits.jq > builds/$$number.json ; \
 		((number = number + 100)) ; \
 	done
 
