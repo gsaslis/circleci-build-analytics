@@ -12,7 +12,7 @@
 # using the elements of the original as basis
 .[] |
 # and appending 2 new fields to each element: `build_time_minutes` and `credits`
-. + { "build_time_minutes": (.build_time_millis / 1000 / 60), "credits": ($classes[.picard.resource_class.class] * (.build_time_millis / 1000 / 60) | floor) }
+. + { "build_time_minutes": (.build_time_millis / 1000 / 60), "credits": ($classes[.picard.resource_class.class] * (.build_time_millis / 1000 / 60) * .parallel) }
 # and close the array
 ]
 
