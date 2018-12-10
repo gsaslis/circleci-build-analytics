@@ -44,7 +44,7 @@ endif
 download: builds/*.json
 
 builds/*.json: # Fetches all builds information from circleci, in batches.
-builds/*.json: builds data/latest_build_number_available data/previous_update_build_number
+builds/*.json: jq builds data/latest_build_number_available data/previous_update_build_number
 	export LATEST_BUILD=$$(cat data/latest_build_number_available) ; \
 	export PREVIOUS_RUN=$$(cat data/previous_update_build_number) ; \
 	((number = $$PREVIOUS_RUN + 1)) ; \
