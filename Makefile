@@ -6,6 +6,7 @@ default: download index
 export GITHUB_USERNAME := 3scale
 export GITHUB_REPONAME := porta
 
+export ES_PROTOCOL := http
 export ES_HOST := localhost
 export ES_PORT := 9200
 export ES_INDEX := circleci_builds
@@ -16,9 +17,9 @@ JQ := $(shell command -v jq 2> /dev/null)
 
 index: ## Uploads to elasticsearch, using Bulk API (expects ndjson file)
 index: all_builds.ndjson
-	echo "Indexing to: http://$$ES_HOST:$$ES_PORT/$$ES_INDEX/$$ES_DOC_TYPE/_bulk/" ; \
-	curl -H 'Content-Type: application/json' -XPUT -d' { "settings" : { "mapping" : { "total_fields" : { "limit" : "100000" } } } }' http://$$ES_HOST:$$ES_PORT/$$ES_INDEX/
-	curl -v -H "Content-Type: application/x-ndjson" -X POST --data-binary @all_builds.ndjson http://$$ES_HOST:$$ES_PORT/$$ES_INDEX/_bulk/
+	echo "Indexing to: $$ES_PROTOCOL://$$ES_HOST:$$ES_PORT/$$ES_INDEX/$$ES_DOC_TYPE/_bulk/" ; \
+	curl -H 'Content-Type: application/json' -XPUT -d' { "settings" : { "mapping" : { "total_fields" : { "limit" : "100000" } } } }' $$ES_PROTOCOL://$$ES_HOST:$$ES_PORT/$$ES_INDEX/
+	curl -v -H "Content-Type: application/x-ndjson" -X POST --data-binary @all_builds.ndjson $$ES_PROTOCOL://$$ES_HOST:$$ES_PORT/$$ES_INDEX/_bulk/
 
 all_builds.ndjson: # Converts json to ndjson AND THEN adds the extra line Elasticsearch Bulk API expects.
 all_builds.ndjson: all_builds.json json-to-ndjson
