@@ -14,9 +14,10 @@ export ES_DOC_TYPE := build
 
 JSON_2_NDJSON := $(shell command -v json-to-ndjson 2> /dev/null)
 JQ := $(shell command -v jq 2> /dev/null)
+CURL := $(shell command -v curl 2> /dev/null)
 
 index: ## Uploads to elasticsearch, using Bulk API (expects ndjson file)
-index: all_builds.ndjson
+index: all_builds.ndjson curl
 	echo "Indexing to: $$ES_PROTOCOL://$$ES_HOST:$$ES_PORT/$$ES_INDEX/$$ES_DOC_TYPE/_bulk/" ; \
 	curl -H 'Content-Type: application/json' -XPUT -d' { "settings" : { "mapping" : { "total_fields" : { "limit" : "100000" } } } }' $$ES_PROTOCOL://$$ES_HOST:$$ES_PORT/$$ES_INDEX/
 	curl -v -H "Content-Type: application/x-ndjson" -X POST --data-binary @all_builds.ndjson $$ES_PROTOCOL://$$ES_HOST:$$ES_PORT/$$ES_INDEX/_bulk/
@@ -41,10 +42,15 @@ ifndef JQ
     $(error 'JQ is not available and necessary! Please install to continue.')
 endif
 
+curl: # Ensures curl package is installed
+ifndef CURL
+    $(error 'curl is not available and is required to proceed! Please install to continue.')
+endif
+
 download: builds/*.json
 
 builds/*.json: # Fetches all builds information from circleci, in batches.
-builds/*.json: jq builds data/latest_build_number_available data/previous_update_build_number
+builds/*.json: jq builds data/latest_build_number_available data/previous_update_build_number curl
 	export LATEST_BUILD=$$(cat data/latest_build_number_available) ; \
 	export PREVIOUS_RUN=$$(cat data/previous_update_build_number) ; \
 	((number = $$PREVIOUS_RUN + 1)) ; \
@@ -59,7 +65,7 @@ builds/*.json: jq builds data/latest_build_number_available data/previous_update
 		echo $$number; \
 	done
 
-data/latest_build_number_available:
+data/latest_build_number_available: curl
 	curl -L "https://circleci.com/api/v1.1/project/github/$$GITHUB_USERNAME/$$GITHUB_REPONAME/?limit=1&filter=completed&offset=0" | jq '.[].build_num' > data/latest_build_number_available
 
 builds:
