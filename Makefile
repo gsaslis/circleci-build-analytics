@@ -34,12 +34,12 @@ all_builds.json:
 
 json-to-ndjson: # Ensures json-to-ndjson package is installed
 ifndef JSON_2_NDJSON
-    $(error 'json-to-ndjson is not available. Consider installing with: `npm install -g json-to-ndjson`')
+    $(error 'json-to-ndjson is not available and is required to proceed. Consider installing with: `npm install -g json-to-ndjson`')
 endif
 
 jq: # Ensures jq package is installed
 ifndef JQ
-    $(error 'JQ is not available and necessary! Please install to continue.')
+    $(error 'JQ is not available and is required to proceed! Please install to continue.')
 endif
 
 curl: # Ensures curl package is installed
