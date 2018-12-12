@@ -9,6 +9,7 @@ export GITHUB_REPONAME := porta
 export ES_PROTOCOL := http
 export ES_HOST := localhost
 export ES_PORT := 9200
+export ES_PATH := _bulk
 export ES_INDEX := circleci_builds
 export ES_DOC_TYPE := build
 
@@ -18,7 +19,7 @@ CURL := $(shell command -v curl 2> /dev/null)
 
 index: ## Uploads to elasticsearch, using Bulk API (expects ndjson file)
 index: curl
-	echo "Will be indexing to: $$ES_PROTOCOL://$$ES_HOST:$$ES_PORT/$$ES_INDEX/$$ES_DOC_TYPE/_bulk/" ; \
+	echo "Will be indexing to: $$ES_PROTOCOL://$$ES_HOST:$$ES_PORT/$$ES_INDEX/$$ES_DOC_TYPE/$$ES_PATH" ; \
 	curl -H 'Content-Type: application/json' -XPUT -d' { "settings" : { "mapping" : { "total_fields" : { "limit" : "100000" } } } }' $$ES_PROTOCOL://$$ES_HOST:$$ES_PORT/$$ES_INDEX/
 
 json-to-ndjson: # Ensures json-to-ndjson package is installed
@@ -49,7 +50,7 @@ update: curl data/latest_build_number_available data/previous_update_build_numbe
 		export LIMIT=$$inc; \
 		export OFFSET=$$number; \
 		$(MAKE) builds/$$number.ndjson ; \
-		curl -v -H "Content-Type: application/x-ndjson" -X POST --data-binary @builds/$$number.ndjson $$ES_PROTOCOL://$$ES_HOST:$$ES_PORT/$$ES_INDEX/_bulk/ ; \
+		curl -v -H "Content-Type: application/x-ndjson" -X POST --data-binary @builds/$$number.ndjson $$ES_PROTOCOL://$$ES_HOST:$$ES_PORT/$$ES_INDEX/$$ES_PATH ; \
 		((number = number + inc)) ; \
 		echo $$number > data/previous_update_build_number ; \
 	done
