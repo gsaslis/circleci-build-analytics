@@ -70,6 +70,9 @@ data/latest_build_number_available: curl
 builds:
 	mkdir -p builds
 
+local:
+	ES_MEM_LIMIT=3g ES_JVM_HEAP=3g ELASTIC_VERSION=6.5.1 docker-compose up -d
+
 clean:
 	rm -rf builds/
 	rm data/latest_build_number_available
